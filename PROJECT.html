@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OT Medication Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        opacity: 0.9;
+    }
+
+    .auto-save-indicator {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.2);
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .save-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #4caf50;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .content {
+        padding: 30px;
+    }
+
+    .add-med-toggle {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        font-weight: 600;
+        margin-bottom: 20px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .add-med-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .add-med-toggle .arrow {
+        font-size: 1.2em;
+        transition: transform 0.3s;
+    }
+
+    .add-med-toggle.active .arrow {
+        transform: rotate(180deg);
+    }
+
+    .form-section {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        display: none;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .form-section.active {
+        display: block;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-section h2 {
+        color: #667eea;
+        margin-bottom: 20px;
+        font-size: 1.5em;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+        font-size: 0.9em;
+    }
+
+    input, select {
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95em;
+        transition: border 0.3s;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        font-weight: 600;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .print-btn {
+        background: #28a745;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+
+    .print-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .search-container {
+        flex: 1;
+        min-width: 250px;
+        max-width: 400px;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: border 0.3s;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #667eea;
+    }
+
+    .search-box::placeholder {
+        color: #999;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .history-btn {
+        background: #9c27b0;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        font-weight: 600;
+    }
+
+    .history-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(156, 39, 176, 0.4);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        overflow: auto;
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 50px auto;
+        padding: 0;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 1000px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+        color: white;
+        padding: 25px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.8em;
+    }
+
+    .close {
+        color: white;
+        font-size: 35px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .close:hover {
+        color: #f0f0f0;
+    }
+
+    .modal-body {
+        padding: 30px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .history-filters {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .filter-group input,
+    .filter-group select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95em;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .history-table th {
+        background: #2c3e50;
+        color: white;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #34495e;
+    }
+
+    .history-table td {
+        padding: 12px;
+        border-bottom: 1px solid #dee2e6;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    .history-table tbody tr:nth-child(odd) {
+        background: #f8f9fa;
+    }
+
+    .history-table tbody tr:nth-child(even) {
+        background: white;
+    }
+
+    .history-table tbody tr:hover {
+        background: #e3f2fd !important;
+    }
+
+    .history-table tbody tr:hover td {
+        color: #1565c0;
+    }
+
+    .transaction-type {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.85em;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .type-withdraw {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .type-return {
+        background: #e3f2fd;
+        color: #0d47a1;
+    }
+
+    .no-history {
+        text-align: center;
+        padding: 50px;
+        color: #999;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.95em;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    td {
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        font-size: 0.9em;
+    }
+
+    tbody tr {
+        transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    tbody tr.expired {
+        background: #fff5f5;
+    }
+
+    tbody tr.expiring-soon {
+        background: #fffbf5;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 15px;
+        font-size: 0.8em;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-good {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-expired {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85em;
+        margin-right: 5px;
+        transition: opacity 0.2s;
+    }
+
+    .action-btn:hover {
+        opacity: 0.8;
+    }
+
+    .edit-btn {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .delete-btn {
+        background: #ff4757;
+        color: white;
+    }
+
+    .save-btn {
+        background: #28a745;
+        color: white;
+    }
+
+    .cancel-btn {
+        background: #6c757d;
+        color: white;
+    }
+
+    .withdraw-btn {
+        background: #ff9800;
+        color: white;
+    }
+
+    .return-btn {
+        background: #2196F3;
+        color: white;
+    }
+
+    .edit-input {
+        width: 100%;
+        padding: 6px;
+        border: 2px solid #667eea;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+
+    .edit-select {
+        width: 100%;
+        padding: 6px;
+        border: 2px solid #667eea;
+        border-radius: 4px;
+        font-size: 0.9em;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px;
+        color: #999;
+    }
+
+    @media print {
+        body {
+            background: white;
+            padding: 0;
+        }
+
+        .container {
+            box-shadow: none;
+            max-width: 100%;
+        }
+
+        .form-section, .print-btn, .action-btn {
+            display: none !important;
+        }
+
+        .header {
+            background: #667eea !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        thead {
+            background: #667eea !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        tbody tr.expired {
+            background: #fff5f5 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        tbody tr.expiring-soon {
+            background: #fffbf5 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .status-badge {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        table {
+            page-break-inside: auto;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+    }
+
+                @media (max-width: 768px) {
+        .header h1 {
+            font-size: 1.8em;
+        }
+
+        .auto-save-indicator {
+            position: static;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .list-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-container {
+            max-width: 100%;
+        }
+
+        .button-group {
+            justify-content: center;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        table {
+            font-size: 0.85em;
+        }
+
+        th, td {
+            padding: 8px;
+        }
+
+        .action-btn {
+            padding: 4px 8px;
+            font-size: 0.8em;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 OT Medication Tracker</h1>
+            <p>Operating Theatre Medication Management System</p>
+            <div class="auto-save-indicator">
+                <span class="save-dot"></span>
+                <span>Auto-Save Active</span>
+            </div>
+        </div>
+
+```
+    <div class="content">
+        <button class="add-med-toggle" onclick="toggleAddMedication()">
+            <span>➕ Add New Medication</span>
+            <span class="arrow">▼</span>
+        </button>
+
+        <div class="form-section" id="addMedicationForm">
+            <h2 id="formTitle">Add New Medication</h2>
+            <form id="medForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="medName">Medication Name *</label>
+                        <input type="text" id="medName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dosage">Dosage *</label>
+                        <input type="text" id="dosage" placeholder="e.g., 500mg, 10ml" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pharmacyCode">Pharmacy Code *</label>
+                        <input type="text" id="pharmacyCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity *</label>
+                        <input type="number" id="quantity" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expirationDate">Expiration Date *</label>
+                        <input type="date" id="expirationDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location *</label>
+                        <select id="location" required onchange="handleLocationChange()">
+                            <option value="">Select Location</option>
+                            <option value="Room 1">Room 1</option>
+                            <option value="Room 2">Room 2</option>
+                            <option value="Room 3">Room 3</option>
+                            <option value="Room 4">Room 4</option>
+                            <option value="Room 5">Room 5</option>
+                            <option value="Room 6">Room 6</option>
+                            <option value="Room 7">Room 7</option>
+                            <option value="RECOVERY 1">RECOVERY 1</option>
+                            <option value="RECOVERY 2">RECOVERY 2</option>
+                            <option value="Other">Other (Specify)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="customLocationGroup" style="display: none;">
+                        <label for="customLocation">Custom Location *</label>
+                        <input type="text" id="customLocation" placeholder="Enter custom location">
+                    </div>
+                </div>
+                <button type="submit" class="btn" id="submitBtn">Add Medication</button>
+                <button type="button" class="btn cancel-btn" id="cancelEditBtn" style="display: none;" onclick="cancelEdit()">Cancel</button>
+            </form>
+        </div>
+
+        <div class="medications-list">
+            <div class="list-header">
+                <h2>Medication List</h2>
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="searchBox" 
+                        class="search-box" 
+                        placeholder="🔍 Search by name, dosage, code, or location..." 
+                        onkeyup="searchMedications()"
+                    >
+                </div>
+                <div class="button-group">
+                    <button class="history-btn" onclick="showWithdrawHistory()">📋 Withdraw History</button>
+                    <button class="print-btn" onclick="printMedications()">🖨️ Print List</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <div id="medList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw History Modal -->
+<div id="historyModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>📋 Withdrawal History</h2>
+            <span class="close" onclick="closeHistoryModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="history-filters">
+                <div class="filter-group">
+                    <label for="filterMedName">Filter by Medication:</label>
+                    <input type="text" id="filterMedName" placeholder="Enter medication name..." onkeyup="filterHistory()">
+                </div>
+                <div class="filter-group">
+                    <label for="filterPatientName">Filter by Patient Name:</label>
+                    <input type="text" id="filterPatientName" placeholder="Enter patient name..." onkeyup="filterHistory()">
+                </div>
+                <div class="filter-group">
+                    <label for="filterPatientID">Filter by Patient ID:</label>
+                    <input type="text" id="filterPatientID" placeholder="Enter patient ID..." onkeyup="filterHistory()">
+                </div>
+                <div class="filter-group">
+                    <label for="filterDateFrom">From Date:</label>
+                    <input type="date" id="filterDateFrom" onchange="filterHistory()">
+                </div>
+                <div class="filter-group">
+                    <label for="filterDateTo">To Date:</label>
+                    <input type="date" id="filterDateTo" onchange="filterHistory()">
+                </div>
+                <div class="filter-group">
+                    <label for="filterType">Transaction Type:</label>
+                    <select id="filterType" onchange="filterHistory()">
+                        <option value="all">All Transactions</option>
+                        <option value="withdraw">Withdrawals Only</option>
+                        <option value="return">Returns Only</option>
+                    </select>
+                </div>
+            </div>
+            <div id="historyContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let medications = [];
+    let withdrawHistory = [];
+    let editingIndex = -1;
+    let autoSaveInterval;
+    const DELETE_PASSWORD = 'De2255';
+
+    // Removed app password - direct access allowed
+    function verifyDeletePassword() {
+        let attempts = 0;
+        while (attempts < 3) {
+            const enteredPassword = prompt('Enter delete password to remove this medication:');
+            
+            if (enteredPassword === null) {
+                return false;
+            }
+            
+            if (enteredPassword === DELETE_PASSWORD) {
+                return true;
+            }
+            
+            attempts++;
+            if (attempts < 3) {
+                alert(`Incorrect password! You have ${3 - attempts} attempt(s) remaining.`);
+            }
+        }
+        
+        alert('Too many failed attempts. Deletion cancelled.');
+        return false;
+    }
+
+    function handleLocationChange() {
+        const locationSelect = document.getElementById('location');
+        const customLocationGroup = document.getElementById('customLocationGroup');
+        const customLocationInput = document.getElementById('customLocation');
+        
+        if (locationSelect.value === 'Other') {
+            customLocationGroup.style.display = 'block';
+            customLocationInput.required = true;
+        } else {
+            customLocationGroup.style.display = 'none';
+            customLocationInput.required = false;
+            customLocationInput.value = '';
+        }
+    }
+
+    function toggleAddMedication() {
+        const formSection = document.getElementById('addMedicationForm');
+        const toggleButton = document.querySelector('.add-med-toggle');
+        
+        formSection.classList.toggle('active');
+        toggleButton.classList.toggle('active');
+        
+        if (formSection.classList.contains('active')) {
+            formSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function loadMedications() {
+        const stored = localStorage.getItem('medications');
+        if (stored) {
+            medications = JSON.parse(stored);
+        }
+        const storedHistory = localStorage.getItem('withdrawHistory');
+        if (storedHistory) {
+            withdrawHistory = JSON.parse(storedHistory);
+        }
+        renderMedications();
+    }
+
+    function saveMedications() {
+        localStorage.setItem('medications', JSON.stringify(medications));
+        localStorage.setItem('withdrawHistory', JSON.stringify(withdrawHistory));
+        // Create backup
+        localStorage.setItem('medications_backup', JSON.stringify(medications));
+        localStorage.setItem('withdrawHistory_backup', JSON.stringify(withdrawHistory));
+        localStorage.setItem('last_save_time', new Date().toISOString());
+        showSaveIndicator();
+    }
+
+    function showSaveIndicator() {
+        const indicator = document.querySelector('.auto-save-indicator');
+        indicator.style.background = 'rgba(76, 175, 80, 0.3)';
+        setTimeout(() => {
+            indicator.style.background = 'rgba(255,255,255,0.2)';
+        }, 1000);
+    }
+
+    function autoBackup() {
+        if (medications.length > 0) {
+            saveMedications();
+        }
+    }
+
+    function getDaysUntilExpiration(expirationDate) {
+        const today = new Date();
+        const expDate = new Date(expirationDate);
+        const diffTime = expDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+
+    function getStatus(daysUntilExpiration) {
+        if (daysUntilExpiration < 0) {
+            return { class: 'status-expired', text: 'EXPIRED', rowClass: 'expired' };
+        } else if (daysUntilExpiration <= 30) {
+            return { class: 'status-warning', text: 'EXPIRING SOON', rowClass: 'expiring-soon' };
+        } else {
+            return { class: 'status-good', text: 'GOOD', rowClass: '' };
+        }
+    }
+
+    function renderMedications() {
+        const medList = document.getElementById('medList');
+        const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+        
+        // Filter medications based on search
+        let filteredMedications = medications;
+        if (searchTerm) {
+            filteredMedications = medications.filter(med => 
+                med.name.toLowerCase().includes(searchTerm) ||
+                med.dosage.toLowerCase().includes(searchTerm) ||
+                med.pharmacyCode.toLowerCase().includes(searchTerm) ||
+                med.location.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        if (filteredMedications.length === 0) {
+            if (searchTerm) {
+                medList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No medications found</h3>
+                        <p>No medications match your search: "${searchTerm}"</p>
+                    </div>
+                `;
+            } else {
+                medList.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No medications added yet</h3>
+                        <p>Add your first medication using the form above</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        filteredMedications.sort((a, b) => {
+            const daysA = getDaysUntilExpiration(a.expirationDate);
+            const daysB = getDaysUntilExpiration(b.expirationDate);
+            return daysA - daysB;
+        });
+
+        let tableHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Medication Name</th>
+                        <th>Dosage</th>
+                        <th>Pharmacy Code</th>
+                        <th>Quantity</th>
+                        <th>Location</th>
+                        <th>Expiration Date</th>
+                        <th>Days Until Expiration</th>
+                        <th>Status</th>
+                        <th class="no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        filteredMedications.forEach((med, displayIndex) => {
+            const index = medications.indexOf(med);
+            const daysUntilExpiration = getDaysUntilExpiration(med.expirationDate);
+            const status = getStatus(daysUntilExpiration);
+            
+            let expirationText = '';
+            if (daysUntilExpiration < 0) {
+                expirationText = `${Math.abs(daysUntilExpiration)} days ago`;
+            } else if (daysUntilExpiration === 0) {
+                expirationText = 'Today';
+            } else if (daysUntilExpiration === 1) {
+                expirationText = 'Tomorrow';
+            } else {
+                expirationText = `${daysUntilExpiration} days`;
+            }
+
+            tableHTML += `
+                <tr class="${status.rowClass}">
+                    <td><strong>${displayIndex + 1}</strong></td>
+                    <td><strong>${med.name}</strong></td>
+                    <td>${med.dosage}</td>
+                    <td>${med.pharmacyCode}</td>
+                    <td>${med.quantity}</td>
+                    <td>${med.location}</td>
+                    <td>${new Date(med.expirationDate).toLocaleDateString()}</td>
+                    <td>${expirationText}</td>
+                    <td><span class="status-badge ${status.class}">${status.text}</span></td>
+                    <td class="no-print">
+                        <button class="action-btn edit-btn" onclick="editMedication(${index})">✏️ Edit</button>
+                        <button class="action-btn withdraw-btn" onclick="withdrawMedication(${index})">📤 Withdraw</button>
+                        <button class="action-btn return-btn" onclick="returnMedication(${index})">📥 Return</button>
+                        <button class="action-btn delete-btn" onclick="deleteMedication(${index})">🗑️ Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+
+        medList.innerHTML = tableHTML;
+    }
+
+    function searchMedications() {
+        renderMedications();
+    }
+
+    function withdrawMedication(index) {
+        const med = medications[index];
+        
+        // Get patient information
+        const patientName = prompt(`📤 WITHDRAW MEDICATION\n\nMedication: ${med.name} (${med.dosage})\nCurrent Quantity: ${med.quantity}\n\n━━━━━━━━━━━━━━━━━━━━━━\nEnter Patient Name:`);
+        
+        if (patientName === null || patientName.trim() === '') {
+            alert('Patient name is required to withdraw medication.');
+            return;
+        }
+        
+        const patientID = prompt(`📤 WITHDRAW MEDICATION\n\nMedication: ${med.name} (${med.dosage})\nPatient Name: ${patientName}\n\n━━━━━━━━━━━━━━━━━━━━━━\nEnter Patient ID:`);
+        
+        if (patientID === null || patientID.trim() === '') {
+            alert('Patient ID is required to withdraw medication.');
+            return;
+        }
+        
+        const withdrawAmount = prompt(`📤 WITHDRAW MEDICATION\n\nMedication: ${med.name} (${med.dosage})\nPatient Name: ${patientName}\nPatient ID: ${patientID}\nCurrent Quantity: ${med.quantity}\n\n━━━━━━━━━━━━━━━━━━━━━━\nEnter amount to withdraw:`);
+        
+        if (withdrawAmount === null) return;
+        
+        const amount = parseInt(withdrawAmount);
+        
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid positive number.');
+            return;
+        }
+        
+        if (amount > med.quantity) {
+            alert(`Cannot withdraw ${amount}. Only ${med.quantity} available.`);
+            return;
+        }
+        
+        // Record the transaction with patient information
+        const transaction = {
+            id: Date.now(),
+            type: 'withdraw',
+            medicationName: med.name,
+            dosage: med.dosage,
+            pharmacyCode: med.pharmacyCode,
+            amount: amount,
+            previousQuantity: med.quantity,
+            newQuantity: med.quantity - amount,
+            location: med.location,
+            patientName: patientName.trim(),
+            patientID: patientID.trim(),
+            date: new Date().toISOString(),
+            dateFormatted: new Date().toLocaleString()
+        };
+        
+        withdrawHistory.unshift(transaction);
+        
+        medications[index].quantity = med.quantity - amount;
+        saveMedications();
+        renderMedications();
+        alert(`✅ WITHDRAWAL SUCCESSFUL\n\nMedication: ${med.name}\nAmount Withdrawn: ${amount}\nPatient: ${patientName}\nPatient ID: ${patientID}\nRemaining Quantity: ${medications[index].quantity}`);
+    }
+
+    function returnMedication(index) {
+        const med = medications[index];
+        const returnAmount = prompt(`Return to: ${med.name} (${med.dosage})\nCurrent Quantity: ${med.quantity}\n\nEnter amount to return:`);
+        
+        if (returnAmount === null) return;
+        
+        const amount = parseInt(returnAmount);
+        
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid positive number.');
+            return;
+        }
+        
+        // Record the transaction
+        const transaction = {
+            id: Date.now(),
+            type: 'return',
+            medicationName: med.name,
+            dosage: med.dosage,
+            pharmacyCode: med.pharmacyCode,
+            amount: amount,
+            previousQuantity: med.quantity,
+            newQuantity: parseInt(med.quantity) + amount,
+            location: med.location,
+            date: new Date().toISOString(),
+            dateFormatted: new Date().toLocaleString()
+        };
+        
+        withdrawHistory.unshift(transaction);
+        
+        medications[index].quantity = parseInt(med.quantity) + amount;
+        saveMedications();
+        renderMedications();
+        alert(`Successfully returned ${amount} unit(s).\nNew Total: ${medications[index].quantity}`);
+    }
+
+    function editMedication(index) {
+        editingIndex = index;
+        const med = medications[index];
+        
+        // Open the form if it's closed
+        const formSection = document.getElementById('addMedicationForm');
+        const toggleButton = document.querySelector('.add-med-toggle');
+        if (!formSection.classList.contains('active')) {
+            formSection.classList.add('active');
+            toggleButton.classList.add('active');
+        }
+        
+        document.getElementById('medName').value = med.name;
+        document.getElementById('dosage').value = med.dosage;
+        document.getElementById('pharmacyCode').value = med.pharmacyCode;
+        document.getElementById('quantity').value = med.quantity;
+        document.getElementById('expirationDate').value = med.expirationDate;
+        
+        const locationSelect = document.getElementById('location');
+        const standardLocations = ['Room 1', 'Room 2', 'Room 3', 'Room 4', 'Room 5', 'Room 6', 'Room 7', 'RECOVERY 1', 'RECOVERY 2'];
+        
+        if (standardLocations.includes(med.location)) {
+            locationSelect.value = med.location;
+            handleLocationChange();
+        } else {
+            locationSelect.value = 'Other';
+            handleLocationChange();
+            document.getElementById('customLocation').value = med.location;
+        }
+        
+        document.getElementById('formTitle').textContent = 'Edit Medication';
+        document.getElementById('submitBtn').textContent = 'Update Medication';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        
+        document.getElementById('medForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        editingIndex = -1;
+        document.getElementById('medForm').reset();
+        document.getElementById('formTitle').textContent = 'Add New Medication';
+        document.getElementById('submitBtn').textContent = 'Add Medication';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+        handleLocationChange();
+        
+        // Close the form
+        const formSection = document.getElementById('addMedicationForm');
+        const toggleButton = document.querySelector('.add-med-toggle');
+        formSection.classList.remove('active');
+        toggleButton.classList.remove('active');
+    }
+
+    function deleteMedication(index) {
+        if (!verifyDeletePassword()) {
+            return;
+        }
+        
+        if (confirm('Are you sure you want to delete this medication?')) {
+            medications.splice(index, 1);
+            saveMedications();
+            renderMedications();
+            alert('Medication deleted successfully.');
+        }
+    }
+
+    function printMedications() {
+        window.print();
+    }
+
+    function showWithdrawHistory() {
+        document.getElementById('historyModal').style.display = 'block';
+        renderHistory();
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('historyModal').style.display = 'none';
+    }
+
+    function renderHistory() {
+        const historyContent = document.getElementById('historyContent');
+        
+        if (withdrawHistory.length === 0) {
+            historyContent.innerHTML = `
+                <div class="no-history">
+                    <h3>No transaction history</h3>
+                    <p>Withdrawal and return transactions will appear here</p>
+                </div>
+            `;
+            return;
+        }
+
+        const filterMedName = document.getElementById('filterMedName').value.toLowerCase();
+        const filterPatientName = document.getElementById('filterPatientName').value.toLowerCase();
+        const filterPatientID = document.getElementById('filterPatientID').value.toLowerCase();
+        const filterDateFrom = document.getElementById('filterDateFrom').value;
+        const filterDateTo = document.getElementById('filterDateTo').value;
+        const filterType = document.getElementById('filterType').value;
+
+        let filteredHistory = withdrawHistory.filter(transaction => {
+            let matches = true;
+
+            if (filterMedName && !transaction.medicationName.toLowerCase().includes(filterMedName)) {
+                matches = false;
+            }
+
+            if (filterPatientName && transaction.patientName && !transaction.patientName.toLowerCase().includes(filterPatientName)) {
+                matches = false;
+            }
+
+            if (filterPatientID && transaction.patientID && !transaction.patientID.toLowerCase().includes(filterPatientID)) {
+                matches = false;
+            }
+
+            if (filterType !== 'all' && transaction.type !== filterType) {
+                matches = false;
+            }
+
+            if (filterDateFrom) {
+                const transDate = new Date(transaction.date).setHours(0,0,0,0);
+                const fromDate = new Date(filterDateFrom).setHours(0,0,0,0);
+                if (transDate < fromDate) matches = false;
+            }
+
+            if (filterDateTo) {
+                const transDate = new Date(transaction.date).setHours(0,0,0,0);
+                const toDate = new Date(filterDateTo).setHours(0,0,0,0);
+                if (transDate > toDate) matches = false;
+            }
+
+            return matches;
+        });
+
+        if (filteredHistory.length === 0) {
+            historyContent.innerHTML = `
+                <div class="no-history">
+                    <h3>No matching transactions</h3>
+                    <p>Try adjusting your filters</p>
+                </div>
+            `;
+            return;
+        }
+
+        let tableHTML = `
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date & Time</th>
+                        <th>Type</th>
+                        <th>Medication</th>
+                        <th>Dosage</th>
+                        <th>Code</th>
+                        <th>Amount</th>
+                        <th>Patient Name</th>
+                        <th>Patient ID</th>
+                        <th>Previous Qty</th>
+                        <th>New Qty</th>
+                        <th>Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        filteredHistory.forEach((transaction, displayIndex) => {
+            const typeClass = transaction.type === 'withdraw' ? 'type-withdraw' : 'type-return';
+            const typeText = transaction.type === 'withdraw' ? '📤 WITHDRAW' : '📥 RETURN';
+            const patientInfo = transaction.type === 'withdraw' 
+                ? `<td><strong>${transaction.patientName || 'N/A'}</strong></td><td>${transaction.patientID || 'N/A'}</td>`
+                : '<td colspan="2" style="text-align:center; color:#999;">—</td>';
+
+            tableHTML += `
+                <tr>
+                    <td><strong>${displayIndex + 1}</strong></td>
+                    <td>${transaction.dateFormatted}</td>
+                    <td><span class="transaction-type ${typeClass}">${typeText}</span></td>
+                    <td><strong>${transaction.medicationName}</strong></td>
+                    <td>${transaction.dosage}</td>
+                    <td>${transaction.pharmacyCode}</td>
+                    <td><strong>${transaction.amount}</strong></td>
+                    ${patientInfo}
+                    <td>${transaction.previousQuantity}</td>
+                    <td>${transaction.newQuantity}</td>
+                    <td>${transaction.location}</td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `
+                </tbody>
+            </table>
+        `;
+
+        historyContent.innerHTML = tableHTML;
+    }
+
+    function filterHistory() {
+        renderHistory();
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('historyModal');
+        if (event.target == modal) {
+            closeHistoryModal();
+        }
+    }
+
+    document.getElementById('medForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const locationSelect = document.getElementById('location');
+        let finalLocation = locationSelect.value;
+        
+        if (locationSelect.value === 'Other') {
+            finalLocation = document.getElementById('customLocation').value;
+        }
+        
+        const medication = {
+            name: document.getElementById('medName').value,
+            dosage: document.getElementById('dosage').value,
+            pharmacyCode: document.getElementById('pharmacyCode').value,
+            quantity: document.getElementById('quantity').value,
+            expirationDate: document.getElementById('expirationDate').value,
+            location: finalLocation
+        };
+
+        if (editingIndex >= 0) {
+            medications[editingIndex] = medication;
+            editingIndex = -1;
+            document.getElementById('formTitle').textContent = 'Add New Medication';
+            document.getElementById('submitBtn').textContent = 'Add Medication';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            
+            // Close the form after editing
+            const formSection = document.getElementById('addMedicationForm');
+            const toggleButton = document.querySelector('.add-med-toggle');
+            formSection.classList.remove('active');
+            toggleButton.classList.remove('active');
+        } else {
+            medications.push(medication);
+        }
+
+        saveMedications();
+        renderMedications();
+        this.reset();
+        handleLocationChange();
+    });
+
+    // Load data directly on page load - no password check
+    loadMedications();
+
+    // Auto-save every 30 seconds
+    autoSaveInterval = setInterval(autoBackup, 30000);
+
+    // Save before page unload
+    window.addEventListener('beforeunload', function(e) {
+        saveMedications();
+    });
+
+    // Prevent accidental data loss
+    window.addEventListener('beforeunload', function(e) {
+        if (medications.length > 0) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+</script>
+```
+
+</body>
+</html>
